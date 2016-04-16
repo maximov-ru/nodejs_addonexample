@@ -3,7 +3,10 @@
 
 #include <nan.h>
 #include <string>
+#include "RF24/nRF24L01.h"
 #include "RF24/RF24.h"
+#include "RF24/RF24_config.h"
+#include "RF24/bcm2835.h"
 
 class nrf24 : public Nan::ObjectWrap {
  public:
