@@ -1,15 +1,18 @@
-#ifndef MYOBJECT_H
-#define MYOBJECT_H
+#ifndef NRF24OBJECT_H
+#define NRF24OBJECT_H
 
 #include <nan.h>
+#include <string>
+#include "RF24/RF24.h"
 
-class MyObject : public Nan::ObjectWrap {
+class nrf24 : public Nan::ObjectWrap {
  public:
   static void Init(v8::Local<v8::Object> exports);
 
  private:
-  explicit MyObject(double value = 0);
-  ~MyObject();
+  explicit nrf24(int cepin, int cspin);
+  explicit nrf24(int cepin, int cspin, uint32_t spispeed );
+  ~nrf24();
 
   static void New(const Nan::FunctionCallbackInfo<v8::Value>& info);
   static void GetValue(const Nan::FunctionCallbackInfo<v8::Value>& info);
@@ -18,6 +21,7 @@ class MyObject : public Nan::ObjectWrap {
   static void RunCallback(const Nan::FunctionCallbackInfo<v8::Value>& info);
   static Nan::Persistent<v8::Function> constructor;
   double value_;
+  RF24* radio;
 };
 
 #endif

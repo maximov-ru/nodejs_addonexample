@@ -1,14 +1,21 @@
 #include "myobject.h"
 #include <unistd.h>
+#include "RF24/RF24.h"
 #define Sleep(x) usleep((x)*1000)
 
 using namespace Nan;  // NOLINT(build/namespaces)
-Nan::Persistent<v8::Function> MyObject::constructor;
+Nan::Persistent<v8::Function> nrf24::constructor;
 
-MyObject::MyObject(double value) : value_(value) {
+nrf24::nrf24(int cepin, int cspin) {
+  radio = new RF24(cepin, cspin);
+  value_ = 0;
+}
+nrf24::nrf24(int cepin, int cspin, uint32_t spispeed ) {
+  //radio = new RF24(cepin, cspin, spispeed);
+  value_ = 0;
 }
 
-MyObject::~MyObject() {
+nrf24::~nrf24() {
 }
 
 class SleepWorker : public AsyncWorker {
@@ -34,12 +41,12 @@ class SleepWorker : public AsyncWorker {
   int milliseconds;
 };
 
-void MyObject::Init(v8::Local<v8::Object> exports) {
+void nrf24::Init(v8::Local<v8::Object> exports) {
   Nan::HandleScope scope;
 
   // Prepare constructor template
   v8::Local<v8::FunctionTemplate> tpl = Nan::New<v8::FunctionTemplate>(New);
-  tpl->SetClassName(Nan::New("MyObject").ToLocalChecked());
+  tpl->SetClassName(Nan::New("nrf24").ToLocalChecked());
   tpl->InstanceTemplate()->SetInternalFieldCount(1);
 
   // Prototype
@@ -49,14 +56,17 @@ void MyObject::Init(v8::Local<v8::Object> exports) {
   SetPrototypeMethod(tpl, "runCallback", RunCallback);
 
   constructor.Reset(tpl->GetFunction());
-  exports->Set(Nan::New("MyObject").ToLocalChecked(), tpl->GetFunction());
+  exports->Set(Nan::New("nrf24").ToLocalChecked(), tpl->GetFunction());
 }
 
-void MyObject::New(const FunctionCallbackInfo<v8::Value>& info) {
+void nrf24::New(const FunctionCallbackInfo<v8::Value>& info) {
   if (info.IsConstructCall()) {
     // Invoked as constructor: `new MyObject(...)`
-    double value = info[0]->IsUndefined() ? 0 : info[0]->NumberValue();
-    MyObject* obj = new MyObject(value);
+    int cepin = info[0]->IsUndefined() ? 0 : info[0]->NumberValue();
+    int cspin = info[1]->IsUndefined() ? 0 : info[1]->NumberValue();
+    uint32_t spispeed = info[2]->IsUndefined() ? 0 :info[2]->NumberValue();
+    nrf24* obj = info[2]->IsUndefined() ? new nrf24(cepin, cspin) :  new nrf24(cepin, cspin, spispeed);
+
     obj->Wrap(info.This());
     info.GetReturnValue().Set(info.This());
   } else {
@@ -68,19 +78,19 @@ void MyObject::New(const FunctionCallbackInfo<v8::Value>& info) {
   }
 }
 
-void MyObject::GetValue(const FunctionCallbackInfo<v8::Value>& info) {
-  MyObject* obj = ObjectWrap::Unwrap<MyObject>(info.Holder());
+void nrf24::GetValue(const FunctionCallbackInfo<v8::Value>& info) {
+  nrf24* obj = ObjectWrap::Unwrap<nrf24>(info.Holder());
   info.GetReturnValue().Set(Nan::New(obj->value_));
 }
 
-void MyObject::PlusOne(const FunctionCallbackInfo<v8::Value>& info) {
-  MyObject* obj = ObjectWrap::Unwrap<MyObject>(info.Holder());
+void nrf24::PlusOne(const FunctionCallbackInfo<v8::Value>& info) {
+  nrf24* obj = ObjectWrap::Unwrap<nrf24>(info.Holder());
   obj->value_ += 1;
   info.GetReturnValue().Set(Nan::New(obj->value_));
 }
 
-void MyObject::Multiply(const FunctionCallbackInfo<v8::Value>& info) {
-  MyObject* obj = ObjectWrap::Unwrap<MyObject>(info.Holder());
+void nrf24::Multiply(const FunctionCallbackInfo<v8::Value>& info) {
+  nrf24* obj = ObjectWrap::Unwrap<nrf24>(info.Holder());
   double multiple = info[0]->IsUndefined() ? 1 : info[0]->NumberValue();
 
   v8::Local<v8::Function> cons = Nan::New<v8::Function>(constructor);
@@ -91,11 +101,12 @@ void MyObject::Multiply(const FunctionCallbackInfo<v8::Value>& info) {
   info.GetReturnValue().Set(cons->NewInstance(argc, argv));
 }
 
-void MyObject::RunCallback(const FunctionCallbackInfo<v8::Value>& info) {
-   MyObject* obj = ObjectWrap::Unwrap<MyObject>(info.Holder());
+void nrf24::RunCallback(const FunctionCallbackInfo<v8::Value>& info) {
+   nrf24* obj = ObjectWrap::Unwrap<nrf24>(info.Holder());
 
    Callback *callbackGood = new Callback(info[0].As<v8::Function>());
    Callback *callbackBad = new Callback(info[1].As<v8::Function>());
 
    AsyncQueueWorker(new SleepWorker(callbackGood, 1000));
+   AsyncQueueWorker(new SleepWorker(callbackBad, 3000));
  }

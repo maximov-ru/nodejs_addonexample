@@ -22,7 +22,8 @@ Release/obj.target/addon/addon.o: ../addon.cc ../node_modules/nan/nan.h \
   ../node_modules/nan/nan_implementation_12_inl.h \
   ../node_modules/nan/nan_persistent_12_inl.h \
   ../node_modules/nan/nan_weak.h ../node_modules/nan/nan_object_wrap.h \
-  ../node_modules/nan/nan_typedarray_contents.h ../myobject.h
+  ../node_modules/nan/nan_typedarray_contents.h ../myobject.h \
+  ../RF24/RF24.h ../RF24/RF24_config.h ../RF24/bcm2835.h
 ../addon.cc:
 ../node_modules/nan/nan.h:
 /Users/omaximov/.node-gyp/5.5.0/include/node/node_version.h:
@@ -50,3 +51,6 @@ Release/obj.target/addon/addon.o: ../addon.cc ../node_modules/nan/nan.h \
 ../node_modules/nan/nan_object_wrap.h:
 ../node_modules/nan/nan_typedarray_contents.h:
 ../myobject.h:
+../RF24/RF24.h:
+../RF24/RF24_config.h:
+../RF24/bcm2835.h:
