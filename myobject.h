@@ -59,6 +59,8 @@ private:
 
     static void setAddressWidth(const Nan::FunctionCallbackInfo <v8::Value> &info);
 
+    static void printDetails(const Nan::FunctionCallbackInfo <v8::Value> &info);
+
     /*
     bool begin(void);
     void startListening(void);

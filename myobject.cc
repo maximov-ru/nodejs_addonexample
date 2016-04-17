@@ -71,6 +71,7 @@ void nrf24::Init(v8::Local <v8::Object> exports) {
     SetPrototypeMethod(tpl, "powerUp", powerUp);
     SetPrototypeMethod(tpl, "txStandBy", txStandBy);
     SetPrototypeMethod(tpl, "setAddressWidth", setAddressWidth);
+    SetPrototypeMethod(tpl, "printDetails", printDetails);
 
     constructor.Reset(tpl->GetFunction());
     exports->Set(Nan::New("nrf24").ToLocalChecked(), tpl->GetFunction());
@@ -207,6 +208,11 @@ void nrf24::setAddressWidth(const FunctionCallbackInfo <v8::Value> &info) {
     nrf24 *obj = ObjectWrap::Unwrap<nrf24>(info.Holder());
     uint8_t a_width = info[0]->IsUndefined() ? 0 : info[0]->NumberValue();
     obj->radio->setAddressWidth(a_width);
+}
+
+void nrf24::printDetails(const FunctionCallbackInfo <v8::Value> &info) {
+    nrf24 *obj = ObjectWrap::Unwrap<nrf24>(info.Holder());
+    obj->radio->printDetails();
 }
 
 /*void nrf24::RunCallback(const FunctionCallbackInfo <v8::Value> &info) {
