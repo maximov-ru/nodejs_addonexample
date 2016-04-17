@@ -148,7 +148,7 @@ void nrf24::setPayloadSize(const FunctionCallbackInfo <v8::Value> &info) {
 void nrf24::getPayloadSize(const FunctionCallbackInfo <v8::Value> &info) {
     nrf24 *obj = ObjectWrap::Unwrap<nrf24>(info.Holder());
     uint8_t size = obj->radio->getPayloadSize();
-    info.GetReturnValue().Set(Nan::New(ret));
+    info.GetReturnValue().Set(Nan::New(size));
 }
 
 void nrf24::getDynamicPayloadSize(const FunctionCallbackInfo <v8::Value> &info) {
