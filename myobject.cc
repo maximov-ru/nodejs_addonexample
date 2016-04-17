@@ -95,10 +95,10 @@ void nrf24::New(const FunctionCallbackInfo <v8::Value> &info) {
     }
 }
 
-void nrf24::GetValue(const FunctionCallbackInfo <v8::Value> &info) {
+/*void nrf24::GetValue(const FunctionCallbackInfo <v8::Value> &info) {
     nrf24 *obj = ObjectWrap::Unwrap<nrf24>(info.Holder());
     info.GetReturnValue().Set(Nan::New(obj->value_));
-}
+}*/
 
 void nrf24::begin(const FunctionCallbackInfo <v8::Value> &info) {
     nrf24 *obj = ObjectWrap::Unwrap<nrf24>(info.Holder());
