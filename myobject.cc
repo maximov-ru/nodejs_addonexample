@@ -1,6 +1,6 @@
 #include "myobject.h"
 #include <unistd.h>
-#include "RF24/RF24.h"
+#include "RF24.h"
 #define Sleep(x) usleep((x)*1000)
 
 using namespace Nan;  // NOLINT(build/namespaces)
