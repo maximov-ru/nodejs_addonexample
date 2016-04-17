@@ -1,6 +1,6 @@
 var addon = require('bindings')('addon');
 
-var radio = new addon.nrf24(22,7,32);
+var radio = new addon.nrf24(25,8,32);
 radio.begin();
 radio.enableDynamicPayloads();
 radio.setPayloadSize(8);
