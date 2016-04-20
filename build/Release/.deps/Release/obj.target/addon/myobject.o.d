@@ -23,8 +23,8 @@ Release/obj.target/addon/myobject.o: ../myobject.cc ../myobject.h \
   ../node_modules/nan/nan_implementation_12_inl.h \
   ../node_modules/nan/nan_persistent_12_inl.h \
   ../node_modules/nan/nan_weak.h ../node_modules/nan/nan_object_wrap.h \
-  ../node_modules/nan/nan_typedarray_contents.h ../RF24/RF24.h \
-  ../RF24/RF24_config.h ../RF24/bcm2835.h
+  ../node_modules/nan/nan_typedarray_contents.h ../nRF24L01.h ../RF24.h \
+  ../RF24_config.h ../bcm2835.h
 ../myobject.cc:
 ../myobject.h:
 ../node_modules/nan/nan.h:
@@ -52,6 +52,7 @@ Release/obj.target/addon/myobject.o: ../myobject.cc ../myobject.h \
 ../node_modules/nan/nan_weak.h:
 ../node_modules/nan/nan_object_wrap.h:
 ../node_modules/nan/nan_typedarray_contents.h:
-../RF24/RF24.h:
-../RF24/RF24_config.h:
-../RF24/bcm2835.h:
+../nRF24L01.h:
+../RF24.h:
+../RF24_config.h:
+../bcm2835.h:

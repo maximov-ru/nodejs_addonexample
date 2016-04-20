@@ -1,1 +1,1 @@
-cmd_Release/addon.node := c++ -bundle -undefined dynamic_lookup -Wl,-search_paths_first -mmacosx-version-min=10.5 -arch x86_64 -L./Release  -o Release/addon.node Release/obj.target/addon/addon.o Release/obj.target/addon/myobject.o 
+cmd_Release/addon.node := c++ -bundle -undefined dynamic_lookup -Wl,-search_paths_first -mmacosx-version-min=10.5 -arch x86_64 -L./Release  -o Release/addon.node Release/obj.target/addon/addon.o Release/obj.target/addon/myobject.o Release/obj.target/addon/RF24.o Release/obj.target/addon/bcm2835.o 
