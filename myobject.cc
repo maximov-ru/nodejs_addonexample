@@ -7,15 +7,7 @@
 
 using namespace Nan;  // NOLINT(build/namespaces)
 
-struct NrfState{
-    bool autoAck = true;
-    bool dynamicPayload = false;
-    bool dynamicAck = false;
-    uint8_t payloadSize = 32;
-    uint8_t channel;
-    uitn8_t pipeCount = 0;
-    bool usedPipes [6];
-};
+
 Nan::Persistent <v8::Function> nrf24::constructor;
 
 nrf24::nrf24(int cepin, int cspin) {

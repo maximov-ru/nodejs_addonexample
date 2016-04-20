@@ -8,6 +8,16 @@
 #include "RF24_config.h"
 #include "bcm2835.h"
 
+struct NrfState{
+    bool autoAck = true;
+    bool dynamicPayload = false;
+    bool dynamicAck = false;
+    uint8_t payloadSize = 32;
+    uint8_t channel;
+    uitn8_t pipeCount = 0;
+    bool usedPipes [6];
+};
+
 class nrf24 : public Nan::ObjectWrap {
 public:
     static void Init(v8::Local <v8::Object> exports);
