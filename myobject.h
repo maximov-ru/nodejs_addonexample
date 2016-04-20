@@ -14,7 +14,7 @@ struct NrfState{
     bool dynamicAck;
     uint8_t payloadSize;
     uint8_t channel;
-    uitn8_t pipeCount;
+    uint8_t pipeCount;
     bool usedPipes [6];
 };
 
