@@ -1,10 +1,21 @@
 #include "myobject.h"
 #include <unistd.h>
+#include <cstdlib>
 #include "RF24.h"
 
 #define Sleep(x) usleep((x)*1000)
 
 using namespace Nan;  // NOLINT(build/namespaces)
+
+struct NrfState{
+    bool autoAck = true;
+    bool dynamicPayload = false;
+    bool dynamicAck = false;
+    uint8_t payloadSize = 32;
+    uint8_t channel;
+    uitn8_t pipeCount = 0;
+    bool usedPipes [6];
+};
 Nan::Persistent <v8::Function> nrf24::constructor;
 
 nrf24::nrf24(int cepin, int cspin) {
@@ -13,35 +24,78 @@ nrf24::nrf24(int cepin, int cspin) {
 }
 
 nrf24::nrf24(int cepin, int cspin, uint32_t spispeed) {
-    radio = new RF24(cepin, cspin, spispeed);
+    //radio = new RF24(cepin, cspin, spispeed);
     value_ = 0;
 }
 
 nrf24::~nrf24() {
 }
 
-class SleepWorker : public AsyncWorker {
+class ListenWorker : public AsyncWorker {
 public:
-    SleepWorker(Callback *callback, int milliseconds)
-            : AsyncWorker(callback), milliseconds(milliseconds) { }
+    ListenWorker(Callback *callback, Callback *callback_err, RF24* radio, NrfState& state, int milliseconds)
+            : AsyncWorker(callback), callback_err(callback_err), radio(radio), state(state), milliseconds(milliseconds) {
 
-    ~SleepWorker() { }
+    }
+
+    ~ListenWorker() { }
 
     void Execute() {
-        Sleep(milliseconds);
+        radio->startListening();
+        bool isTimeout = false;
+        unsigned long started_waiting_at = millis();
+        while ( ! radio->available() && ! isTimeout )
+            if (millis() - started_waiting_at > milliseconds )
+                isTimeout = true;
+
+        bool haveOut = false;
+        if ( isTimeout )
+        {
+            SetErrorMessage("timeout of listening");
+        }
+        else
+        {
+            len = state.dynamicPayload ? radio->getDynamicPayloadSize() : state.payloadSize;
+            for (int i = 1;i <= 5; i++) {
+                if (state.usedPipes[i] && radio->available(i)) {
+                    //reading data and break;
+                    radio->read(buf,len);
+                    pipeNumber = i;
+                    haveOut = true;
+                    break;
+                }
+            }
+        }
+        if (!haveOut) {
+            SetErrorMessage("no available with pipe number");
+        }
+
     }
 
     void HandleOKCallback() {
         Nan::HandleScope scope;
 
-        v8::Local <v8::Value> argv[1] = {Nan::New("hello world").ToLocalChecked()};
+        v8::Local <v8::Value> argv[1] = {Nan::New(buf,len).ToLocalChecked()};
+        v8::Local <v8::Uint32> argv[2] = {Nan::New(pipeNumber).ToLocalChecked()};
 
-        callback->Call(1, argv);
+        callback->Call(2, argv);
+    }
 
+    void HandleErrorCallback(){
+        v8::Local <v8::Value> argv[1] = {Nan::New(ErrorMessage()).ToLocalChecked()};
+
+        callback_err->Call(1, argv);
     }
 
 private:
     int milliseconds;
+    Callback* callback_err;
+    RF24* radio;
+    NrfState state;
+    char buf[32];
+    uint8_t len;
+    uint32_t pipeNumber;
+
 };
 
 void nrf24::Init(v8::Local <v8::Object> exports) {
@@ -71,7 +125,9 @@ void nrf24::Init(v8::Local <v8::Object> exports) {
     SetPrototypeMethod(tpl, "powerUp", powerUp);
     SetPrototypeMethod(tpl, "txStandBy", txStandBy);
     SetPrototypeMethod(tpl, "setAddressWidth", setAddressWidth);
-    SetPrototypeMethod(tpl, "printDetails", printDetails);
+    SetPrototypeMethod(tpl, "printDetails", printDetails);/**/
+
+    SetPrototypeMethod(tpl, "listen", listen);
 
     constructor.Reset(tpl->GetFunction());
     exports->Set(Nan::New("nrf24").ToLocalChecked(), tpl->GetFunction());
@@ -117,6 +173,10 @@ void nrf24::openReadingPipe(const FunctionCallbackInfo <v8::Value> &info) {
     nrf24 *obj = ObjectWrap::Unwrap<nrf24>(info.Holder());
     uint8_t number = info[0]->NumberValue();
     uint64_t address = info[1]->NumberValue();
+    if (!obj->state.usedPipes[number]) {
+        obj->state.usedPipes[number] = true;
+        obj->state.pipeCount++;
+    }
     obj->radio->openReadingPipe(number, address);
 }
 
@@ -138,17 +198,20 @@ void nrf24::setChannel(const FunctionCallbackInfo <v8::Value> &info) {
     nrf24 *obj = ObjectWrap::Unwrap<nrf24>(info.Holder());
     uint8_t channel = info[0]->NumberValue();
     obj->radio->setChannel(channel);
+    obj->state.channel = channel;
 }
 
 void nrf24::setPayloadSize(const FunctionCallbackInfo <v8::Value> &info) {
     nrf24 *obj = ObjectWrap::Unwrap<nrf24>(info.Holder());
     uint8_t size = info[0]->NumberValue();
     obj->radio->setPayloadSize(size);
+    obj->state.payloadSize = size;
 }
 
 void nrf24::getPayloadSize(const FunctionCallbackInfo <v8::Value> &info) {
     nrf24 *obj = ObjectWrap::Unwrap<nrf24>(info.Holder());
     uint8_t size = obj->radio->getPayloadSize();
+    obj->state.payloadSize = size;
     info.GetReturnValue().Set(Nan::New(size));
 }
 
@@ -166,19 +229,20 @@ void nrf24::enableAckPayload(const FunctionCallbackInfo <v8::Value> &info) {
 
 void nrf24::enableDynamicPayloads(const FunctionCallbackInfo <v8::Value> &info) {
     nrf24 *obj = ObjectWrap::Unwrap<nrf24>(info.Holder());
-
+    obj->state.dynamicPayload = true;
     obj->radio->enableDynamicPayloads();
 }
 
 void nrf24::enableDynamicAck(const FunctionCallbackInfo <v8::Value> &info) {
     nrf24 *obj = ObjectWrap::Unwrap<nrf24>(info.Holder());
-
+    obj->state.dynamicAck = true;
     obj->radio->enableDynamicAck();
 }
 
 void nrf24::setAutoAck(const FunctionCallbackInfo <v8::Value> &info) {
     nrf24 *obj = ObjectWrap::Unwrap<nrf24>(info.Holder());
     bool enable = info[0]->BooleanValue();
+    obj->state.autoAck = enable;
     obj->radio->setAutoAck(enable);
 }
 
@@ -213,14 +277,15 @@ void nrf24::setAddressWidth(const FunctionCallbackInfo <v8::Value> &info) {
 void nrf24::printDetails(const FunctionCallbackInfo <v8::Value> &info) {
     nrf24 *obj = ObjectWrap::Unwrap<nrf24>(info.Holder());
     obj->radio->printDetails();
-}
+}/**/
 
-/*void nrf24::RunCallback(const FunctionCallbackInfo <v8::Value> &info) {
+void nrf24::listen(const FunctionCallbackInfo <v8::Value> &info) {
     nrf24 *obj = ObjectWrap::Unwrap<nrf24>(info.Holder());
 
     Callback *callbackGood = new Callback(info[0].As<v8::Function>());
     Callback *callbackBad = new Callback(info[1].As<v8::Function>());
+    uint32_t timeout = info[2]->IsUndefined() ? 1000 : info[2]->NumberValue();
 
-    AsyncQueueWorker(new SleepWorker(callbackGood, 1000));
-    AsyncQueueWorker(new SleepWorker(callbackBad, 3000));
-}*/
+    AsyncQueueWorker(new ListenWorker(callbackGood,callbackBad,obj->state, timeout));
+    info.GetReturnValue().SetUndefined();
+}

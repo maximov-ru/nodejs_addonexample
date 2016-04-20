@@ -61,6 +61,8 @@ private:
 
     static void printDetails(const Nan::FunctionCallbackInfo <v8::Value> &info);
 
+    static void listen(const Nan::FunctionCallbackInfo <v8::Value> &info);
+
     /*
     bool begin(void);
     void startListening(void);
@@ -101,6 +103,7 @@ private:
     static Nan::Persistent <v8::Function> constructor;
     double value_;
     RF24 *radio;
+    NrfState state;
 };
 
 #endif
