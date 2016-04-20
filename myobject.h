@@ -9,12 +9,12 @@
 #include "bcm2835.h"
 
 struct NrfState{
-    bool autoAck = true;
-    bool dynamicPayload = false;
-    bool dynamicAck = false;
-    uint8_t payloadSize = 32;
+    bool autoAck;
+    bool dynamicPayload;
+    bool dynamicAck;
+    uint8_t payloadSize;
     uint8_t channel;
-    uitn8_t pipeCount = 0;
+    uitn8_t pipeCount;
     bool usedPipes [6];
 };
 
