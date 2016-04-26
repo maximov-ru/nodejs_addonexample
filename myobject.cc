@@ -48,7 +48,7 @@ public:
         else
         {
             len = state.dynamicPayload ? radio->getDynamicPayloadSize() : state.payloadSize;
-            for (int i = 1;i <= 5; i++) {
+            for (uint8_t i = 1;i <= 5; i++) {
                 if (state.usedPipes[i] && radio->available(i)) {
                     //reading data and break;
                     radio->read(buf,len);
@@ -67,8 +67,8 @@ public:
     void HandleOKCallback() {
         Nan::HandleScope scope;
 
-        v8::Local <v8::Value> argv[1] = {Nan::New(buf,len).ToLocalChecked()};
-        v8::Local <v8::Uint32> argv[2] = {Nan::New(pipeNumber).ToLocalChecked()};
+        v8::Local <v8::Value> argv[2] = {Nan::New(buf,len).ToLocalChecked(),Nan::New(pipeNumber).ToLocalChecked()};
+        //v8::Local <v8::Value> argv[2] = {Nan::New(pipeNumber).ToLocalChecked()};
 
         callback->Call(2, argv);
     }
@@ -278,6 +278,6 @@ void nrf24::listen(const FunctionCallbackInfo <v8::Value> &info) {
     Callback *callbackBad = new Callback(info[1].As<v8::Function>());
     uint32_t timeout = info[2]->IsUndefined() ? 1000 : info[2]->NumberValue();
 
-    AsyncQueueWorker(new ListenWorker(callbackGood,callbackBad,obj->state, timeout));
+    AsyncQueueWorker(new ListenWorker(callbackGood,callbackBad,obj->radio,obj->state, timeout));
     info.GetReturnValue().SetUndefined();
 }
