@@ -49,7 +49,7 @@ public:
         {
             len = state.dynamicPayload ? radio->getDynamicPayloadSize() : state.payloadSize;
             for (uint8_t i = 1;i <= 5; i++) {
-                if (state.usedPipes[i] && radio->available(i)) {
+                if (state.usedPipes[i] && radio->available(&i)) {
                     //reading data and break;
                     radio->read(buf,len);
                     pipeNumber = i;
@@ -67,7 +67,7 @@ public:
     void HandleOKCallback() {
         Nan::HandleScope scope;
 
-        v8::Local <v8::Value> argv[2] = {Nan::New(buf,len).ToLocalChecked(),Nan::New(pipeNumber).ToLocalChecked()};
+        v8::Local <v8::Value> argv[2] = {Nan::New(buf,len).ToLocalChecked(),Nan::New(pipeNumber)};
         //v8::Local <v8::Value> argv[2] = {Nan::New(pipeNumber).ToLocalChecked()};
 
         callback->Call(2, argv);
